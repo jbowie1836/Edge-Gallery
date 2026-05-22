@@ -1,0 +1,22 @@
+# Template: json-api-service
+# Online JSON-in / JSON-out service defaults for future ECM REST
+# endpoints (search, association lookup, metadata).
+
+mode: "online"
+method: "POST"
+body_template: '{"dcn":"${dcn}"}'
+
+headers:
+  Content-Type: "application/json"
+  Accept: "application/json"
+
+tls:
+  verify: true
+
+validation:
+  expect_status: 200
+  magic_bytes: ""                                 # no fixed prefix for JSON
+  content_type_contains: "application/json"       # server must say JSON
+  min_bytes: 2                                    # at least "{}"
+  max_bytes: 10485760                             # 10 MB ceiling
+  json_required_keys: []                          # caller can override per service

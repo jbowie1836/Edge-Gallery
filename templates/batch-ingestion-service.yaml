@@ -1,0 +1,14 @@
+# Template: batch-ingestion-service
+# EWS-style file-drop ingestion pipeline. The harness places XML +
+# PDF pairs in `drop_folder`; the upstream batch service picks them
+# up. Pickup is detected either by file disappearance (default) or
+# by a configured log marker line.
+
+mode: "batch"
+
+pickup_signal: "file_removed"                     # file_removed | log_marker
+
+log_marker:
+  path: ""                                        # set per-service when using log_marker
+  completion_pattern: "DCN=${dcn}.*INGESTED"      # ${dcn} is substituted per document
+  error_pattern: "E4931"                          # ECM batch race-condition marker

@@ -1,0 +1,26 @@
+dcn,doc_type,pages,expected_size_min,expected_size_max,xml_path,pdf_path,vendor_id,source_system,priority,notes
+DCN0000000001,W2,2,2048,32768,examples/fixtures/dcn1.xml,examples/fixtures/dcn1.pdf,V001,STP,5,baseline W2 single page payer
+DCN0000000002,W2,3,3072,40960,examples/fixtures/dcn2.xml,examples/fixtures/dcn2.pdf,V001,STP,5,W2 with corrections page
+DCN0000000003,1099,1,1536,20480,examples/fixtures/dcn3.xml,examples/fixtures/dcn3.pdf,V002,STP,4,1099-INT
+DCN0000000004,1099,4,4096,65536,examples/fixtures/dcn4.xml,examples/fixtures/dcn4.pdf,V002,STP,4,1099-MISC multi-payer
+DCN0000000005,MED,5,5120,131072,examples/fixtures/dcn5.xml,examples/fixtures/dcn5.pdf,V010,TLM,7,medical record cover sheet
+DCN0000000006,MED,12,12288,524288,examples/fixtures/dcn6.xml,examples/fixtures/dcn6.pdf,V010,TLM,8,full visit transcript
+DCN0000000007,MED,3,3072,49152,examples/fixtures/dcn7.xml,examples/fixtures/dcn7.pdf,V011,TLM,6,lab results summary
+DCN0000000008,EOB,2,2048,32768,examples/fixtures/dcn8.xml,examples/fixtures/dcn8.pdf,V020,CCI,3,explanation of benefits
+DCN0000000009,EOB,6,6144,98304,examples/fixtures/dcn9.xml,examples/fixtures/dcn9.pdf,V020,CCI,3,EOB with claim detail
+DCN0000000010,EOB,1,1024,16384,examples/fixtures/dcn10.xml,examples/fixtures/dcn10.pdf,V021,CCI,2,denial letter
+DCN0000000011,W2,1,1024,16384,examples/fixtures/dcn11.xml,examples/fixtures/dcn11.pdf,V003,DC,5,Doc Center upload W2
+DCN0000000012,1099,2,2048,32768,examples/fixtures/dcn12.xml,examples/fixtures/dcn12.pdf,V003,DC,4,DC 1099-G
+DCN0000000013,MED,8,8192,196608,examples/fixtures/dcn13.xml,examples/fixtures/dcn13.pdf,V012,DC,7,radiology report
+DCN0000000014,EOB,3,3072,49152,examples/fixtures/dcn14.xml,examples/fixtures/dcn14.pdf,V022,DC,3,DC archived EOB
+DCN0000000015,W2,2,2048,32768,examples/fixtures/dcn15.xml,examples/fixtures/dcn15.pdf,V030,EWS,5,EWS ingestion W2
+DCN0000000016,1099,1,1536,20480,examples/fixtures/dcn16.xml,examples/fixtures/dcn16.pdf,V030,EWS,4,EWS 1099-R
+DCN0000000017,MED,15,15360,720896,examples/fixtures/dcn17.xml,examples/fixtures/dcn17.pdf,V031,EWS,9,large multi-visit chart
+DCN0000000018,MED,2,2048,32768,examples/fixtures/dcn18.xml,examples/fixtures/dcn18.pdf,V031,EWS,6,EWS lab partial
+DCN0000000019,EOB,4,4096,65536,examples/fixtures/dcn19.xml,examples/fixtures/dcn19.pdf,V032,EWS,3,EWS EOB batch entry
+DCN0000000020,EOB,1,1024,16384,examples/fixtures/dcn20.xml,examples/fixtures/dcn20.pdf,V032,EWS,2,EWS denial
+DCN0000000021,W2,10,10240,262144,examples/fixtures/dcn21.xml,examples/fixtures/dcn21.pdf,V004,STP,6,W2 multi-state correction
+DCN0000000022,1099,7,7168,98304,examples/fixtures/dcn22.xml,examples/fixtures/dcn22.pdf,V004,STP,5,STP 1099-K
+DCN0000000023,MED,20,20480,1048576,examples/fixtures/dcn23.xml,examples/fixtures/dcn23.pdf,V013,TLM,10,inpatient stay chart
+DCN0000000024,EOB,5,5120,81920,examples/fixtures/dcn24.xml,examples/fixtures/dcn24.pdf,V023,CCI,3,CCI EOB with appeals
+DCN0000000025,W2,1,1024,16384,examples/fixtures/dcn25.xml,examples/fixtures/dcn25.pdf,V005,DC,5,Doc Center small W2

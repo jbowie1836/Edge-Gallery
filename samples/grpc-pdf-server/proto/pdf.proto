@@ -1,0 +1,55 @@
+// PDF streaming service for ecm-loadtest test runs.
+//
+// One server-streaming RPC: given a DCN (or empty for "pick one"),
+// the server reads the matching PDF file from its configured folder
+// and streams it back as a sequence of byte-array chunks.
+
+syntax = "proto3";
+
+package ecm.pdf.v1;
+
+service PdfService {
+  // Streams the bytes of one PDF as a sequence of PdfChunk messages.
+  // The final message has `is_final == true`. Errors surface as
+  // standard gRPC status codes (NOT_FOUND, INVALID_ARGUMENT, etc).
+  rpc GetPdfStream(GetPdfRequest) returns (stream PdfChunk);
+
+  // Single-shot informational RPC: list the DCNs the server can
+  // serve. Useful for warmup and discovery in tests.
+  rpc ListAvailable(ListAvailableRequest) returns (ListAvailableResponse);
+}
+
+message GetPdfRequest {
+  // Document control number. Maps to "<dcn>.pdf" inside the
+  // server's configured PDF folder. Empty string requests a
+  // round-robin pick across the folder.
+  string dcn = 1;
+  // Caller-controlled chunk size in bytes. Server clamps to
+  // [1024, 1048576]. Zero means server default (64 KB).
+  uint32 chunk_size = 2;
+}
+
+message PdfChunk {
+  // DCN this chunk belongs to. Repeated in every chunk so a
+  // multiplexing client can demux a single stream cleanly.
+  string dcn = 1;
+  // Sequence number, 0-indexed.
+  uint64 seq = 2;
+  // Raw PDF bytes for this chunk.
+  bytes data = 3;
+  // True when this is the last chunk for this DCN.
+  bool is_final = 4;
+  // Total bytes for the whole PDF (filled on the final chunk).
+  uint64 total_bytes = 5;
+}
+
+message ListAvailableRequest {}
+
+message ListAvailableResponse {
+  repeated PdfDescriptor pdfs = 1;
+}
+
+message PdfDescriptor {
+  string dcn = 1;
+  uint64 size_bytes = 2;
+}

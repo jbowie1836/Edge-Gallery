@@ -1,0 +1,22 @@
+# Template: legacy-pdf-servlet
+# Head-to-head baseline against the legacy PDF retrieval servlet.
+# Form-urlencoded body, PDF bytes back.
+
+mode: "online"
+method: "POST"
+body_template: "dcn=${dcn}&pages=${pages}"
+
+headers:
+  Content-Type: "application/x-www-form-urlencoded"
+  Accept: "application/pdf"
+
+tls:
+  verify: true
+
+validation:
+  expect_status: 200
+  magic_bytes: "%PDF-"
+  content_type_contains: ""
+  min_bytes: 1024
+  max_bytes: 52428800
+  json_required_keys: []

@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ecm-loadtest developer playbook</title>
+<style>
+:root {
+  --bg: #0a0d12; --panel: #131822; --elev: #1a2030;
+  --fg: #e6edf3; --fg2: #b1bac4; --muted: #768390;
+  --border: #21262d; --border2: #30363d;
+  --c1: #2ec4b6; --c2: #b388ff; --c3: #ffb454; --c4: #ff6ad5;
+  --c5: #69db7c; --c6: #ff8c42; --c7: #ff5d5d; --c8: #58a6ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px; line-height: 1.6; }
+a { color: var(--c1); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header.hero { background: var(--elev); padding: 32px 40px; border-bottom: 1px solid var(--border2);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+header.hero h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -0.01em; }
+header.hero .meta { color: var(--fg2); font-size: 12px; font-variant-numeric: tabular-nums; }
+.layout { display: grid; grid-template-columns: 240px 1fr; gap: 0; max-width: 1280px; margin: 0 auto; }
+aside { padding: 32px 16px 32px 40px; border-right: 1px solid var(--border); position: sticky; top: 0;
+  align-self: start; max-height: 100vh; overflow-y: auto; }
+aside h3 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+aside ul { list-style: none; padding: 0; margin: 0 0 24px; }
+aside li { padding: 4px 0; font-size: 13px; }
+aside a { color: var(--fg2); }
+aside a:hover { color: var(--c1); }
+main { padding: 32px 40px 64px 24px; max-width: 960px; }
+section { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); }
+section:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+h2 { color: var(--c1); margin: 0 0 16px; font-size: 22px; letter-spacing: -0.01em; }
+h3 { color: var(--c2); margin: 24px 0 8px; font-size: 16px; }
+code, pre { font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; }
+code { background: var(--elev); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+pre { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; overflow-x: auto; line-height: 1.5; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin: 8px 0; }
+table th, table td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+table th { color: var(--c1); background: var(--panel); }
+table tbody tr:nth-child(even) td { background: var(--elev); }
+.diagram { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; margin: 16px 0; }
+.diagram svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--fg2);
+  margin-top: 8px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block;
+  vertical-align: middle; margin-right: 6px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; margin: 16px 0; }
+.kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; }
+.kpi-card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-card .value { font-size: 22px; line-height: 1.3; margin: 4px 0; color: var(--c1); }
+.kpi-card .sub { color: var(--fg2); font-size: 12px; }
+footer { color: var(--muted); font-size: 12px; padding: 32px 40px; border-top: 1px solid var(--border);
+  margin-top: 64px; max-width: 1280px; margin-left: auto; margin-right: auto; }
+@media print {
+  :root { --bg: #fff; --panel: #fff; --elev: #f6f8fa; --fg: #1f2328; --fg2: #57606a;
+    --muted: #6e7781; --border: #d0d7de; --border2: #afb8c1; }
+  aside { display: none; }
+  .layout { display: block; }
+  pre, table { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>ecm-loadtest developer playbook</h1>
+  <div class="meta">version 1.0.0  --  ECM Image Viewer Service load tester  --  pure-rust, single binary</div>
+</header>
+
+<div class="layout">
+<aside>
+  <h3>Contents</h3>
+  <ul>
+    <li><a href="#overview">1. Executive overview</a></li>
+    <li><a href="#architecture">2. Architecture</a></li>
+    <li><a href="#configuration">3. Configuration</a></li>
+    <li><a href="#flows">4. Execution flows</a></li>
+    <li><a href="#data-model">5. Data model</a></li>
+    <li><a href="#metrics">6. Metrics reference</a></li>
+    <li><a href="#errors">7. Error handling</a></li>
+    <li><a href="#extending">8. Extension points</a></li>
+    <li><a href="#troubleshooting">9. Troubleshooting</a></li>
+    <li><a href="#cli-ref">10. CLI reference</a></li>
+    <li><a href="#exit-codes">11. Exit codes</a></li>
+    <li><a href="#glossary">12. Glossary</a></li>
+  </ul>
+</aside>
+
+<main>
+
+<section id="overview">
+<h2>1. Executive overview</h2>
+<p>ecm-loadtest is a single-binary Rust CLI for load testing the ECM Image
+Viewer Service, the legacy PDF servlet it replaces, and the EWS file-drop
+ingestion pipeline that feeds the ECM platform. The tool produces
+per-service, per-rate-level, per-run CSV samples, summary JSON, and HTML
+reports, plus cross-service comparison reports for head-to-head analysis.</p>
+
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="label">Modules</div><div class="value">9</div><div class="sub">main, loadtest, batch, templates, report, archive, serve, tui, logx</div></div>
+  <div class="kpi-card"><div class="label">Cargo deps</div><div class="value">19</div><div class="sub">pure-rust, no MSVC, rustls TLS</div></div>
+  <div class="kpi-card"><div class="label">Subcommands</div><div class="value">6</div><div class="sub">run, report, serve, tui, docs, example-config</div></div>
+  <div class="kpi-card"><div class="label">Patterns</div><div class="value">3</div><div class="sub">sustained, stress, rate_levels</div></div>
+</div>
+
+<h3>System context</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="arrow1" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <rect x="40" y="80" width="180" height="60" rx="8" fill="#1a2030" stroke="#2ec4b6" stroke-width="1.5"/>
+  <text x="130" y="105" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">ecm-loadtest</text>
+  <text x="130" y="125" text-anchor="middle" fill="#b1bac4" font-size="11">operator workstation</text>
+  <rect x="290" y="20" width="220" height="50" rx="8" fill="#1a2030" stroke="#b388ff"/>
+  <text x="400" y="45" text-anchor="middle" fill="#e6edf3" font-size="13">ECM Image Viewer Service</text>
+  <text x="400" y="62" text-anchor="middle" fill="#b1bac4" font-size="11">/ecmimageviewer/documents/view</text>
+  <rect x="290" y="90" width="220" height="50" rx="8" fill="#1a2030" stroke="#ffb454"/>
+  <text x="400" y="115" text-anchor="middle" fill="#e6edf3" font-size="13">Legacy PDF servlet</text>
+  <text x="400" y="132" text-anchor="middle" fill="#b1bac4" font-size="11">/legacypdfservice/retrieve</text>
+  <rect x="290" y="160" width="220" height="50" rx="8" fill="#1a2030" stroke="#69db7c"/>
+  <text x="400" y="185" text-anchor="middle" fill="#e6edf3" font-size="13">EWS batch ingestion</text>
+  <text x="400" y="202" text-anchor="middle" fill="#b1bac4" font-size="11">/nas/vendor/inbox</text>
+  <line x1="220" y1="100" x2="290" y2="45" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow1)"/>
+  <line x1="220" y1="115" x2="290" y2="115" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow1)"/>
+  <line x1="220" y1="130" x2="290" y2="180" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow1)"/>
+  <rect x="580" y="160" width="180" height="50" rx="8" fill="#131822" stroke="#58a6ff" stroke-dasharray="4,4"/>
+  <text x="670" y="185" text-anchor="middle" fill="#e6edf3" font-size="13">NAS / vendor folder</text>
+  <line x1="510" y1="185" x2="580" y2="185" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow1)"/>
+</svg>
+<div class="legend">
+  <span><span class="sw" style="background:#2ec4b6"></span>load tester</span>
+  <span><span class="sw" style="background:#b388ff"></span>new ECM REST</span>
+  <span><span class="sw" style="background:#ffb454"></span>legacy baseline</span>
+  <span><span class="sw" style="background:#69db7c"></span>batch pipeline</span>
+</div>
+</div>
+
+<h3>Run lifecycle</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ar2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <g font-size="11" fill="#e6edf3" text-anchor="middle">
+    <rect x="10"  y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#2ec4b6"/><text x="55"  y="55">config</text>
+    <rect x="115" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="160" y="55">archive</text>
+    <rect x="220" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#ffb454"/><text x="265" y="55">setup</text>
+    <rect x="325" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#ff6ad5"/><text x="370" y="55">execute</text>
+    <rect x="430" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#69db7c"/><text x="475" y="55">render</text>
+    <rect x="535" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#ff8c42"/><text x="580" y="55">validate</text>
+    <rect x="640" y="30" width="90" height="40" rx="6" fill="#1a2030" stroke="#58a6ff"/><text x="685" y="55">serve/launch</text>
+  </g>
+  <g stroke="#30363d" stroke-width="1.5">
+    <line x1="100" y1="50" x2="115" y2="50" marker-end="url(#ar2)"/>
+    <line x1="205" y1="50" x2="220" y2="50" marker-end="url(#ar2)"/>
+    <line x1="310" y1="50" x2="325" y2="50" marker-end="url(#ar2)"/>
+    <line x1="415" y1="50" x2="430" y2="50" marker-end="url(#ar2)"/>
+    <line x1="520" y1="50" x2="535" y2="50" marker-end="url(#ar2)"/>
+    <line x1="625" y1="50" x2="640" y2="50" marker-end="url(#ar2)"/>
+  </g>
+</svg>
+</div>
+</section>
+
+<section id="architecture">
+<h2>2. Architecture</h2>
+
+<h3>Module map</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ar3" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <g font-size="12" fill="#e6edf3" text-anchor="middle">
+    <rect x="320" y="10"  width="160" height="40" rx="6" fill="#1a2030" stroke="#2ec4b6" stroke-width="1.5"/><text x="400" y="35">main.rs</text>
+    <rect x="40"  y="100" width="140" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="110" y="125">loadtest.rs</text>
+    <rect x="200" y="100" width="140" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="270" y="125">batch.rs</text>
+    <rect x="360" y="100" width="140" height="40" rx="6" fill="#1a2030" stroke="#ffb454"/><text x="430" y="125">templates.rs</text>
+    <rect x="520" y="100" width="140" height="40" rx="6" fill="#1a2030" stroke="#ff6ad5"/><text x="590" y="125">archive.rs</text>
+    <rect x="40"  y="190" width="140" height="40" rx="6" fill="#1a2030" stroke="#69db7c"/><text x="110" y="215">serve.rs</text>
+    <rect x="200" y="190" width="140" height="40" rx="6" fill="#1a2030" stroke="#69db7c"/><text x="270" y="215">report.rs</text>
+    <rect x="360" y="190" width="140" height="40" rx="6" fill="#1a2030" stroke="#58a6ff"/><text x="430" y="215">tui.rs</text>
+    <rect x="520" y="190" width="140" height="40" rx="6" fill="#1a2030" stroke="#ff8c42"/><text x="590" y="215">logx.rs</text>
+  </g>
+  <g stroke="#30363d" stroke-width="1.5">
+    <line x1="400" y1="50"  x2="110" y2="100" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="270" y2="100" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="430" y2="100" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="590" y2="100" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="110" y2="190" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="270" y2="190" marker-end="url(#ar3)"/>
+    <line x1="400" y1="50"  x2="430" y2="190" marker-end="url(#ar3)"/>
+    <line x1="270" y1="140" x2="270" y2="190" marker-end="url(#ar3)"/>
+    <line x1="110" y1="140" x2="110" y2="190" marker-end="url(#ar3)"/>
+    <line x1="430" y1="140" x2="430" y2="190" marker-end="url(#ar3)"/>
+  </g>
+</svg>
+</div>
+
+<h3>Per-module responsibilities</h3>
+<table>
+  <thead><tr><th>Module</th><th>Purpose</th><th>Key types</th></tr></thead>
+  <tbody>
+    <tr><td><code>main.rs</code></td><td>CLI parser, run dispatcher, top-level panic catcher</td><td><code>Cli</code>, <code>Command</code>, <code>RunOptions</code>, <code>ExitCode</code></td></tr>
+    <tr><td><code>logx.rs</code></td><td>Timestamped logger, ring buffer, log suppression</td><td><code>Level</code></td></tr>
+    <tr><td><code>templates.rs</code></td><td>YAML loader, template merge, manifest CSV reader</td><td><code>Config</code>, <code>Service</code>, <code>ManifestData</code>, <code>Pattern</code></td></tr>
+    <tr><td><code>archive.rs</code></td><td>Pre-run rotation of prior artifacts</td><td>(functions only)</td></tr>
+    <tr><td><code>loadtest.rs</code></td><td>Online HTTP load, three HDR histograms, TTFB seam</td><td><code>Sink</code>, <code>SampleRow</code>, <code>PercentileBlock</code></td></tr>
+    <tr><td><code>batch.rs</code></td><td>File-drop pipeline, pickup signal, E4931 tracking</td><td><code>CycleSink</code>, <code>DocRow</code></td></tr>
+    <tr><td><code>report.rs</code></td><td>HTML/SVG report generation, compare report, post-validation</td><td><code>ServiceSummary</code></td></tr>
+    <tr><td><code>serve.rs</code></td><td>Embedded loopback HTTP server, browser auto-launch</td><td>(functions only)</td></tr>
+    <tr><td><code>tui.rs</code></td><td>Interactive terminal UI (stub in this build)</td><td>(functions only)</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="configuration">
+<h2>3. Configuration</h2>
+<p>YAML config has two levels: top-level run settings, and a
+<code>services:</code> list. Each enabled service runs concurrently.</p>
+<pre>pattern: "rate_levels"
+rate_levels:
+  rates: [5, 25, 50, 100]
+  duration_seconds: 60
+  runs_per_rate: 3
+  cooldown_seconds: 30
+  apdex_threshold_ms: 500
+
+services:
+  - name: "ecm-image-viewer-service"
+    enabled: true
+    mode: "online"
+    template: "pdf-retrieval-service"
+    host: "https://ecm-idev1.example.gov"
+    endpoint: "/ecmimageviewer/documents/view"
+    method: "POST"
+    body_template: '{"dcn":"${dcn}","pages":${pages}}'
+    manifest:
+      path: "examples/manifest.csv"
+      selection: "random"</pre>
+
+<h3>Template inheritance</h3>
+<p>Each service references a template via <code>template: &lt;name&gt;</code>.
+The loader resolves <code>templates/&lt;name&gt;.yaml</code> and deep-merges:
+service block fields win; template fields fill the gaps. Templates may
+extend via <code>extends: &lt;parent-template&gt;</code>. Circular extends
+fails at startup with CONFIG-CONFLICT (exit 12).</p>
+
+<h3>Substitution syntax</h3>
+<table>
+  <tbody>
+    <tr><td><code>${dcn}</code></td><td>DCN column from the current manifest row</td></tr>
+    <tr><td><code>${pages}</code></td><td>Manifest <code>pages</code> cell, fallback to <code>default_pages</code></td></tr>
+    <tr><td><code>${env}</code></td><td>Resolved environment label</td></tr>
+    <tr><td><code>${&lt;col&gt;}</code></td><td>Any column from the manifest row</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="flows">
+<h2>4. Execution flows</h2>
+
+<h3>Online request lifecycle (TTFB seam)</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 130" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ar4" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <g font-size="11" fill="#e6edf3" text-anchor="middle">
+    <rect x="10"  y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#2ec4b6"/><text x="70" y="65">pick manifest row</text>
+    <rect x="150" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="210" y="55">render body</text><text x="210" y="70" font-size="9" fill="#b1bac4">${dcn}, ${pages}</text>
+    <rect x="290" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#ffb454"/><text x="350" y="55">start=Instant::now</text><text x="350" y="70" font-size="9" fill="#b1bac4">monotonic timer</text>
+    <rect x="430" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#ff5d5d"/><text x="490" y="55">send().await</text><text x="490" y="70" font-size="9" fill="#b1bac4">TTFB seam</text>
+    <rect x="570" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#69db7c"/><text x="630" y="55">stream body</text><text x="630" y="70" font-size="9" fill="#b1bac4">count + magic check</text>
+    <rect x="710" y="40" width="80"  height="40" rx="6" fill="#1a2030" stroke="#58a6ff"/><text x="750" y="55">record</text><text x="750" y="70" font-size="9" fill="#b1bac4">3 histos</text>
+  </g>
+  <g stroke="#30363d" stroke-width="1.5">
+    <line x1="130" y1="60" x2="150" y2="60" marker-end="url(#ar4)"/>
+    <line x1="270" y1="60" x2="290" y2="60" marker-end="url(#ar4)"/>
+    <line x1="410" y1="60" x2="430" y2="60" marker-end="url(#ar4)"/>
+    <line x1="550" y1="60" x2="570" y2="60" marker-end="url(#ar4)"/>
+    <line x1="690" y1="60" x2="710" y2="60" marker-end="url(#ar4)"/>
+  </g>
+</svg>
+</div>
+<p>The TTFB seam sits at the instant <code>.send().await</code> returns,
+BEFORE any body bytes are consumed. <code>ttfb_us</code>,
+<code>transfer_us</code>, and <code>total_us</code> are recorded into three
+independent HDR histograms. Per-request invariant:
+<code>total_us == ttfb_us + transfer_us</code> within clock granularity.</p>
+
+<h3>Batch lifecycle (local transport)</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 130" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ar5" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <g font-size="11" fill="#e6edf3" text-anchor="middle">
+    <rect x="10"  y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#2ec4b6"/><text x="70"  y="55">manifest row</text><text x="70" y="70" font-size="9" fill="#b1bac4">xml + pdf path</text>
+    <rect x="150" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="210" y="55">copy XML</text><text x="210" y="70" font-size="9" fill="#b1bac4">first</text>
+    <rect x="290" y="40" width="120" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="350" y="55">copy PDF</text><text x="350" y="70" font-size="9" fill="#b1bac4">T0 = now</text>
+    <rect x="430" y="40" width="160" height="40" rx="6" fill="#1a2030" stroke="#ffb454"/><text x="510" y="55">watch loop</text><text x="510" y="70" font-size="9" fill="#b1bac4">poll_interval_ms</text>
+    <rect x="610" y="40" width="100" height="40" rx="6" fill="#1a2030" stroke="#ff5d5d"/><text x="660" y="55">T1 pickup</text>
+    <rect x="730" y="40" width="60"  height="40" rx="6" fill="#1a2030" stroke="#58a6ff"/><text x="760" y="55">record</text>
+  </g>
+  <g stroke="#30363d" stroke-width="1.5">
+    <line x1="130" y1="60" x2="150" y2="60" marker-end="url(#ar5)"/>
+    <line x1="270" y1="60" x2="290" y2="60" marker-end="url(#ar5)"/>
+    <line x1="410" y1="60" x2="430" y2="60" marker-end="url(#ar5)"/>
+    <line x1="590" y1="60" x2="610" y2="60" marker-end="url(#ar5)"/>
+    <line x1="710" y1="60" x2="730" y2="60" marker-end="url(#ar5)"/>
+  </g>
+</svg>
+</div>
+<p>XML is uploaded BEFORE PDF: ECM batch services watch for the PDF
+arrival as the trigger, so uploading PDF first risks the service picking
+up an incomplete pair. T0 is recorded the instant the second
+(<code>.pdf</code>) write completes. T1 is the moment the watcher
+detects pickup; T2 (optional) is the completion log marker.</p>
+
+<h3>Report generation</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ar6" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#30363d"/></marker></defs>
+  <g font-size="11" fill="#e6edf3" text-anchor="middle">
+    <rect x="10"  y="20" width="140" height="40" rx="6" fill="#1a2030" stroke="#2ec4b6"/><text x="80" y="45">samples + summary</text>
+    <rect x="170" y="20" width="140" height="40" rx="6" fill="#1a2030" stroke="#b388ff"/><text x="240" y="45">percentile compute</text>
+    <rect x="330" y="20" width="140" height="40" rx="6" fill="#1a2030" stroke="#ffb454"/><text x="400" y="45">SVG generation</text>
+    <rect x="490" y="20" width="140" height="40" rx="6" fill="#1a2030" stroke="#69db7c"/><text x="560" y="45">HTML assembly</text>
+    <rect x="650" y="20" width="140" height="40" rx="6" fill="#1a2030" stroke="#58a6ff"/><text x="720" y="45">write file</text>
+  </g>
+  <g stroke="#30363d" stroke-width="1.5">
+    <line x1="150" y1="40" x2="170" y2="40" marker-end="url(#ar6)"/>
+    <line x1="310" y1="40" x2="330" y2="40" marker-end="url(#ar6)"/>
+    <line x1="470" y1="40" x2="490" y2="40" marker-end="url(#ar6)"/>
+    <line x1="630" y1="40" x2="650" y2="40" marker-end="url(#ar6)"/>
+  </g>
+</svg>
+</div>
+</section>
+
+<section id="data-model">
+<h2>5. Data model</h2>
+<h3>samples-*.csv (online)</h3>
+<pre>epoch_ms, ttfb_us, transfer_us, total_us, bytes, status, success, error_category, error_detail</pre>
+<p><code>ttfb_us</code> and <code>transfer_us</code> are empty (not zero) for
+pre-header failures. Only <code>total_us</code> is meaningful in that case.</p>
+
+<h3>documents-*.csv (batch)</h3>
+<pre>dcn, doc_type, drop_epoch_ms, pickup_epoch_ms, complete_epoch_ms,
+pickup_latency_ms, processing_latency_ms, picked_up, completed,
+e4931_observed, error_detail</pre>
+
+<h3>summary-*.json</h3>
+<pre>{
+  "name": "ecm-image-viewer-service",
+  "environment": "idev1",
+  "mode": "online",
+  "run_ts": "20260522_141530",
+  "rate": 25,
+  "run_index": 2,
+  "sent": 1500,
+  "ok": 1490,
+  "failed": 10,
+  "documents_rendered": 1490,
+  "error_rate_pct": 0.67,
+  "throughput_rps_mean": 24.5,
+  "throughput_rps_peak": 30.0,
+  "ttfb":     { "p50": 88000, "p95": 145000, "p99": 230000, ... },
+  "transfer": { "p50": 120000, "p95": 380000, ... },
+  "total":    { "p50": 208000, "p95": 540000, "p99": 1100000, ... },
+  "apdex_score": 0.87,
+  "apdex_t_ms": 500
+}</pre>
+</section>
+
+<section id="metrics">
+<h2>6. Metrics reference</h2>
+<table>
+  <thead><tr><th>Metric</th><th>Basis</th><th>Where it appears</th></tr></thead>
+  <tbody>
+    <tr><td><code>sent / ok / failed</code></td><td>request counter</td><td>summary JSON, KPI cards, compare matrix</td></tr>
+    <tr><td><code>documents_rendered</code></td><td>alias for <code>ok</code> (AC1/AC2 phrasing)</td><td>summary JSON</td></tr>
+    <tr><td><code>throughput_rps_{mean,peak,min,stddev}</code></td><td>per-second buckets</td><td>summary JSON, throughput chart</td></tr>
+    <tr><td><code>ttfb_us</code> percentiles</td><td>HDR histogram</td><td>summary JSON, latency chart, percentile table</td></tr>
+    <tr><td><code>transfer_us</code> percentiles</td><td>HDR histogram</td><td>summary JSON, percentile table</td></tr>
+    <tr><td><code>total_us</code> percentiles</td><td>HDR histogram</td><td>summary JSON, CDF, histogram chart</td></tr>
+    <tr><td><code>apdex_score</code></td><td>(satisfied + tolerating/2) / sent</td><td>summary JSON, KPI card</td></tr>
+    <tr><td><code>error_rate_pct</code></td><td>100 * failed / sent</td><td>summary JSON, error chart</td></tr>
+    <tr><td><code>pickup_latency</code> (batch)</td><td>T1 - T0 histogram</td><td>batch summary, batch chart</td></tr>
+    <tr><td><code>e4931_count</code> (batch)</td><td>log-pattern matches</td><td>batch summary, compare delta</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="errors">
+<h2>7. Error handling</h2>
+<p>Every fallible operation is either <code>?</code>-propagated with an
+<code>anyhow::Context</code> message or matched and classified into one
+of the documented categories. Nothing is swallowed; nothing panics in
+production paths. Each error category maps to a fixed exit code (see
+section 11).</p>
+<p>Per-request errors (timeout, connect, tls, status_4xx, status_5xx,
+body_too_small, body_too_large, bad_magic_bytes, other) are recorded
+into the sample CSV and aggregated into <code>summary.errors</code> but
+do not abort the run. When the same category exceeds 100 occurrences
+in a 10-second window, logging switches to once-per-100 plus a
+per-minute WARN summary so a flapping target cannot fill a multi-GB
+log file.</p>
+</section>
+
+<section id="extending">
+<h2>8. Extension points</h2>
+<h3>Add a new service mode</h3>
+<ol>
+  <li><code>src/templates.rs</code>: add the new variant to the <code>Mode</code> enum.</li>
+  <li><code>src/main.rs</code> in <code>run_command</code>: route the new mode to its own module function.</li>
+  <li>Write the new module (model on <code>loadtest.rs</code> for online,
+      <code>batch.rs</code> for file-drop).</li>
+  <li>Add a YAML template under <code>templates/</code> with the new
+      <code>mode:</code> value.</li>
+</ol>
+<h3>Add a new metric</h3>
+<ol>
+  <li>Extend <code>ServiceSummary</code> in <code>src/report.rs</code> with the new field.</li>
+  <li>Compute the metric in <code>src/loadtest.rs::finalize_summary</code> or <code>src/batch.rs::execute_cycle</code>.</li>
+  <li>Surface it in <code>src/report.rs::build_service_html</code> (KPI card and/or table row).</li>
+  <li>Add it to the rate/volume aggregate in <code>write_rate_aggregate</code> if it should roll up.</li>
+</ol>
+<h3>Add a new HTML report section</h3>
+<p>The format string at the end of <code>build_service_html</code> is the
+single source of truth for section ordering. Insert the new
+<code>&lt;h2&gt;</code> and helper output in the position it should
+render, then add the section name to the post-validation HTML integrity
+test in <code>src/report.rs::post_validate</code>.</p>
+</section>
+
+<section id="troubleshooting">
+<h2>9. Troubleshooting</h2>
+<table>
+  <thead><tr><th>Symptom</th><th>Likely cause</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>Tool exits with code 10</td><td>YAML syntax error</td><td>Check the log line; it includes path and column.</td></tr>
+    <tr><td>Tool exits with code 11</td><td>Field out of range or unknown enum value</td><td>Compare to the prompt's YAML PROPERTY REFERENCE.</td></tr>
+    <tr><td>Tool exits with code 12</td><td>Duplicate service name, all services disabled, batch enabled but batch.volumes empty</td><td>Resolve the conflict in YAML.</td></tr>
+    <tr><td>Tool exits with code 13</td><td>manifest.path not found</td><td>Confirm the path; relative paths resolve from the working dir.</td></tr>
+    <tr><td>Browser shows blank page</td><td>Default browser not configured (headless host)</td><td>Note the URL from the log; open manually.</td></tr>
+    <tr><td>Histogram looks empty in the report</td><td>Zero successful samples (e.g. wrong endpoint)</td><td>Check error_breakdown section.</td></tr>
+    <tr><td>Auto-launch opens too many tabs</td><td>Many services, no <code>--launch-only-compare</code></td><td>Pass <code>--launch-only-compare</code> to open only the compare URL.</td></tr>
+    <tr><td>Server bind fails after 10 fallback ports</td><td>Stale process holding the port range</td><td>Pass <code>--port N</code> with a free port; investigate the holder.</td></tr>
+    <tr><td>SFTP exit 24</td><td>Auth rejected (wrong key, missing known_hosts)</td><td>Connect once interactively to populate known_hosts.</td></tr>
+    <tr><td>Validation suite exits 60</td><td>An artifact failed integrity check</td><td>Open validation-&lt;ts&gt;.html for the per-test detail.</td></tr>
+    <tr><td>Long stress run produces multi-GB log</td><td>Log suppression should have engaged at 100/10s</td><td>Verify <code>--verbose</code> is not pinning the level to DEBUG.</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="cli-ref">
+<h2>10. CLI reference</h2>
+<pre>ecm-loadtest run --config PATH [options]
+  --out-dir DIR              override output dir from YAML
+  --no-archive               skip pre-run archive rotation
+  --no-serve                 don't start the embedded server
+  --no-launch                start server but skip browser open
+  --port N                   embedded server port (default 8765)
+  --vscode                   open reports in VS Code instead of browser
+  --launch-only-compare      open just the compare URL for multi-service runs
+  --env LABEL                override every service's environment field
+  --no-report                skip per-run HTML, keep compare + aggregates
+  --stop-at-error-pct PCT    override YAML circuit breaker
+  --target-rps N             single-rate ad-hoc run
+  --skip-post-validation     skip the 8-group post-run validation suite
+
+ecm-loadtest report --run-id TS [--out-dir DIR]
+ecm-loadtest serve  [--out-dir DIR] [--port N]
+ecm-loadtest tui    [--config PATH] [--out-dir DIR]
+ecm-loadtest docs   [--out-path PATH]
+ecm-loadtest example-config
+
+Global:
+  --verbose      enable DEBUG
+  --quiet        suppress INFO
+  --log-file P   tee log output to a file</pre>
+</section>
+
+<section id="exit-codes">
+<h2>11. Exit codes</h2>
+<table>
+  <tbody>
+    <tr><td><code>0</code></td><td>success</td></tr>
+    <tr><td><code>10</code></td><td>config parse error</td></tr>
+    <tr><td><code>11</code></td><td>config validation error</td></tr>
+    <tr><td><code>12</code></td><td>config conflict</td></tr>
+    <tr><td><code>13</code></td><td>manifest file missing</td></tr>
+    <tr><td><code>14</code></td><td>manifest schema invalid</td></tr>
+    <tr><td><code>15</code></td><td>manifest data invalid</td></tr>
+    <tr><td><code>20</code></td><td>batch drop folder problem</td></tr>
+    <tr><td><code>21</code></td><td>batch source file missing</td></tr>
+    <tr><td><code>22</code></td><td>batch log_marker problem</td></tr>
+    <tr><td><code>23</code></td><td>SFTP connect failure</td></tr>
+    <tr><td><code>24</code></td><td>SFTP auth rejected</td></tr>
+    <tr><td><code>25</code></td><td>SFTP permission</td></tr>
+    <tr><td><code>30</code></td><td>server bind failed</td></tr>
+    <tr><td><code>40</code></td><td>filesystem permission denied</td></tr>
+    <tr><td><code>41</code></td><td>filesystem disk full</td></tr>
+    <tr><td><code>50</code></td><td>shutdown incomplete</td></tr>
+    <tr><td><code>60</code></td><td>post-run validation failure</td></tr>
+    <tr><td><code>70</code></td><td>bug (panic caught)</td></tr>
+    <tr><td><code>130</code></td><td>user interrupt (Ctrl+C before any artifact written)</td></tr>
+  </tbody>
+</table>
+</section>
+
+<section id="glossary">
+<h2>12. Glossary</h2>
+<table>
+  <tbody>
+    <tr><td><strong>AC1-AC4</strong></td><td>Acceptance criteria 1 through 4 of the comparison user story.</td></tr>
+    <tr><td><strong>Apdex</strong></td><td>Application Performance Index. T = satisfied threshold; 4T = tolerating boundary.</td></tr>
+    <tr><td><strong>DCN</strong></td><td>Document Control Number. Primary identifier for any document in ECM.</td></tr>
+    <tr><td><strong>E4931</strong></td><td>Documented ECM batch race condition: EWS queries the ECM database before the ingestion service's commit completes.</td></tr>
+    <tr><td><strong>ECM</strong></td><td>Enterprise Content Management. The platform this tool exercises.</td></tr>
+    <tr><td><strong>EWS</strong></td><td>Enterprise Web Services. The upstream batch pipeline that feeds ECM.</td></tr>
+    <tr><td><strong>idev</strong></td><td>Integration development environment label. ITEST is the next tier up.</td></tr>
+    <tr><td><strong>STP / TLM / CCI / DC</strong></td><td>Originating systems that POST to the ECM Image Viewer Service.</td></tr>
+    <tr><td><strong>TTFB</strong></td><td>Time To First Byte. From request start to the instant response headers arrive.</td></tr>
+    <tr><td><strong>TTLB</strong></td><td>Time To Last Byte. Total request duration including body transfer. Called <code>total</code> in this tool.</td></tr>
+    <tr><td><strong>WebSEAL</strong></td><td>IBM Tivoli reverse-proxy authentication. The <code>webseal-cookie</code> auth mode carries its session cookie.</td></tr>
+  </tbody>
+</table>
+</section>
+
+</main>
+</div>
+
+<footer>
+ecm-loadtest 1.0.0  --  developer playbook  --  generated at build time
+</footer>
+
+</body>
+</html>

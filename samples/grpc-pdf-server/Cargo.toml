@@ -1,0 +1,25 @@
+[package]
+name = "grpc-pdf-server"
+version = "0.1.0"
+edition = "2021"
+description = "Sample gRPC service that streams PDF bytes from a folder; companion test target for ecm-loadtest"
+
+[[bin]]
+name = "grpc-pdf-server"
+path = "src/server.rs"
+
+[[bin]]
+name = "grpc-pdf-client"
+path = "src/client.rs"
+
+[dependencies]
+tonic        = "0.12"                                    # gRPC server + client runtime
+prost        = "0.13"                                    # protobuf encoding
+tokio        = { version = "1",  features = ["full"] }   # async runtime
+tokio-stream = "0.1"                                     # Stream adapters for tonic
+futures-core = "0.3"
+clap         = { version = "4",  features = ["derive"] } # CLI parser
+anyhow       = "1"                                       # error context
+
+[build-dependencies]
+tonic-build  = "0.12"                                    # proto -> Rust codegen

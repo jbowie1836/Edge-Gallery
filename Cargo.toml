@@ -1,0 +1,37 @@
+[package]
+name        = "ecm-loadtest"
+version     = "1.0.0"
+edition     = "2021"
+description = "ECM Image Viewer Service load test CLI"
+
+[[bin]]
+name = "ecm-loadtest"
+path = "src/main.rs"
+
+[dependencies]
+tokio        = { version = "1",    features = ["full"] }                                    # async runtime
+reqwest      = { version = "0.12", default-features = false, features = ["stream", "json", "rustls-tls"] }  # online HTTP client (pure-rust TLS)
+futures-util = "0.3"                                                                         # stream helpers
+hdrhistogram = "7"                                                                           # HDR percentile histograms
+serde        = { version = "1",    features = ["derive"] }                                  # config (de)serialization
+serde_json   = "1"                                                                           # summary + aggregate JSON
+serde_yaml   = "0.9"                                                                         # YAML config + templates
+chrono       = { version = "0.4",  features = ["clock"] }                                   # wall-clock timestamps
+csv          = "1"                                                                           # samples + manifest IO
+rand         = "0.8"                                                                         # manifest selection
+clap         = { version = "4",    features = ["derive"] }                                  # CLI parser
+anyhow       = "1"                                                                           # error context
+ctrlc        = "3"                                                                           # graceful shutdown
+tiny_http    = "0.12"                                                                        # embedded report server
+open         = "5"                                                                           # cross-platform browser launch
+russh        = "0.45"                                                                        # pure-rust SSH for batch SFTP transport
+russh-sftp   = "2"                                                                           # SFTP protocol layer
+ratatui      = "0.28"                                                                        # TUI rendering
+crossterm    = "0.28"                                                                        # cross-platform terminal events
+
+[profile.release]
+lto           = true
+codegen-units = 1
+opt-level     = 3
+strip         = true
+panic         = "abort"

@@ -1,0 +1,22 @@
+# Template: pdf-retrieval-service
+# Online PDF-out service defaults for the ECM Image Viewer Service
+# class of endpoints (POST JSON in, PDF bytes out).
+
+mode: "online"                                    # online | batch
+method: "POST"                                    # POST | GET | PUT
+body_template: '{"dcn":"${dcn}","pages":${pages}}'  # ${dcn}, ${pages}, ${env}, ${col_name}
+
+headers:
+  Content-Type: "application/json"                # JSON request body
+  Accept: "application/pdf"                       # we expect PDF bytes
+
+tls:
+  verify: true                                    # set false for idev self-signed certs
+
+validation:
+  expect_status: 200                              # HTTP 200 OK
+  magic_bytes: "%PDF-"                            # PDF header bytes
+  content_type_contains: ""                       # skip ctype check (some servers vary)
+  min_bytes: 1024                                 # 1 KB minimum body
+  max_bytes: 52428800                             # 50 MB ceiling
+  json_required_keys: []                          # not applicable for PDF responses
