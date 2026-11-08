@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 import type { AtlasMetadata } from '../../types';
 import BrandMark from './BrandMark';
 import { formatDate, formatPeriod } from './atlasModel';
@@ -22,6 +22,10 @@ export default function SourceFooter({ metadata }: { metadata: AtlasMetadata | n
           <BrandMark className="site-footer__mark" />
           <p className="site-footer__name">Lone Star <span aria-hidden="true">/</span> An Income Atlas</p>
           <p className="site-footer__tagline">Mean annual household income for every Texas county, from official Census Bureau estimates.</p>
+          <a href="/downloads/texas-income-atlas-source.zip" download="texas-income-atlas-source.zip">
+            <Download size={15} aria-hidden="true" />
+            Download source ZIP
+          </a>
         </div>
         <div>
           <h2 className="site-footer__title">Sources</h2>
