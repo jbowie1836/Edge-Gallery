@@ -19,6 +19,8 @@ npm run build # Type checking and optimized static production build
 npm run preview
 ```
 
+The reproducible data pipeline uses Python 3.12 and the standard library. Run its parser and ingestion checks with `python -m unittest discover -s scripts -p "test_*.py"`.
+
 Deploy the generated `dist/` directory to a static web host. The data is versioned alongside the application, so a production build does not depend on the Census API being available.
 
 ## Explore

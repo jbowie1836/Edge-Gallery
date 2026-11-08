@@ -1,0 +1,697 @@
+/* County map styles. Every selector is scoped to .county-map so nothing leaks into the app shell.
+   The root fills a parent with a definite size; --county-map-height and --county-map-radius override. */
+
+.county-map {
+  --map-ink: #173e35;
+  --map-ink-soft: #43635a;
+  --map-panel: rgba(255, 255, 255, 0.9);
+  --map-line: rgba(23, 62, 53, 0.13);
+  --map-accent: #dd885c;
+  --map-shadow: 0 1px 2px rgba(23, 62, 53, 0.06), 0 8px 22px rgba(23, 62, 53, 0.09);
+  position: relative;
+  width: 100%;
+  height: var(--county-map-height, 100%);
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: var(--county-map-radius, 0);
+  background: radial-gradient(120% 90% at 50% 40%, #fafcfa 0%, #eef3ef 56%, #e2eae4 100%);
+  color: var(--map-ink);
+  font: inherit;
+  isolation: isolate;
+  container-type: inline-size;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.county-map *,
+.county-map *::before,
+.county-map *::after {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------- viewport and canvas */
+
+.county-map .map-viewport {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  outline: none;
+}
+
+.county-map .map-viewport:focus-visible {
+  outline: 3px solid rgba(23, 62, 53, 0.55);
+  outline-offset: -3px;
+  border-radius: inherit;
+}
+
+.county-map .map-canvas-host,
+.county-map .map-labels {
+  position: absolute;
+  inset: 0;
+}
+
+.county-map .map-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.county-map .map-labels {
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.county-map .map-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--map-ink-soft);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------- city labels and selection pin */
+
+.county-map .map-city,
+.county-map .map-pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.county-map .map-pin[hidden] {
+  display: none;
+}
+
+.county-map .map-city .map-label-dot {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1f3f36;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.95);
+}
+
+.county-map .map-city .map-label-text {
+  position: absolute;
+  top: -8px;
+  left: 7px;
+  color: #1c3a32;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-shadow:
+    0 0 2px #fff,
+    0 0 3px #fff,
+    0 0 6px rgba(255, 255, 255, 0.9);
+}
+
+.county-map .map-city[data-side='left'] .map-label-text {
+  right: 7px;
+  left: auto;
+}
+
+.county-map .map-pin {
+  z-index: 1;
+}
+
+.county-map .map-pin .map-label-dot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--map-accent);
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.county-map .map-pin .map-label-text {
+  position: absolute;
+  bottom: 9px;
+  left: 0;
+  padding: 3px 8px;
+  border: 1px solid rgba(221, 136, 92, 0.6);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(23, 62, 53, 0.14);
+  color: #8a4220;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+/* ------------------------------------------------------------- tooltip */
+
+.county-map .map-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  width: max-content;
+  min-width: 180px;
+  max-width: 250px;
+  padding: 10px 12px 9px;
+  border: 1px solid var(--map-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow:
+    0 12px 32px rgba(23, 62, 53, 0.16),
+    0 2px 6px rgba(23, 62, 53, 0.08);
+  color: var(--map-ink);
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 120ms ease,
+    visibility 0s linear 120ms;
+  will-change: transform;
+}
+
+.county-map .map-tooltip[data-visible='true'] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 120ms ease;
+}
+
+.county-map .map-tooltip p {
+  margin: 0;
+}
+
+.county-map .map-tooltip-name {
+  margin-bottom: 6px !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.county-map .map-tooltip-label {
+  color: var(--map-ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.county-map .map-tooltip-value {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 1px 0 3px !important;
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.county-map .map-tooltip-missing {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 7px;
+  margin-bottom: 3px !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.county-map .map-tooltip-note {
+  grid-column: 2;
+  color: var(--map-ink-soft);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.county-map .map-tooltip-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(23, 62, 53, 0.2);
+}
+
+.county-map .map-tooltip-meta {
+  color: var(--map-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.county-map .map-tooltip-hint {
+  margin-top: 6px !important;
+  padding-top: 6px;
+  border-top: 1px solid var(--map-line);
+  color: #7a5137;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- mode toggle (top left) */
+
+.county-map .map-mode {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--map-line);
+  border-radius: 999px;
+  background: var(--map-panel);
+  box-shadow: var(--map-shadow);
+}
+
+.county-map .map-mode-option {
+  min-width: 46px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--map-ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.county-map .map-mode-option:hover {
+  background: rgba(23, 62, 53, 0.07);
+  color: var(--map-ink);
+}
+
+.county-map .map-mode-option[aria-pressed='true'] {
+  background: var(--map-ink);
+  color: #fff;
+}
+
+.county-map .map-mode-option:focus-visible {
+  outline: 2px solid var(--map-ink);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------- toolbar (top right) */
+
+.county-map .map-toolbar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.county-map .map-tool-group {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--map-line);
+  border-radius: 12px;
+  background: var(--map-panel);
+  box-shadow: var(--map-shadow);
+}
+
+.county-map .map-tool {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--map-ink);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.county-map .map-tool + .map-tool {
+  border-top: 1px solid var(--map-line);
+}
+
+.county-map .map-tool:hover {
+  background: rgba(23, 62, 53, 0.07);
+}
+
+.county-map .map-tool:active {
+  background: rgba(23, 62, 53, 0.13);
+}
+
+.county-map .map-tool:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--map-ink);
+  outline-offset: -4px;
+  border-radius: 9px;
+}
+
+.county-map .map-tool svg {
+  display: block;
+}
+
+.county-map .map-compass-ring {
+  fill: none;
+  stroke: rgba(23, 62, 53, 0.22);
+  stroke-width: 1.4;
+}
+
+.county-map .map-compass-needle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.county-map .map-compass-north {
+  fill: #c4673f;
+}
+
+.county-map .map-compass-south {
+  fill: #a3b5ab;
+}
+
+/* ------------------------------------------------------------- hint and legend (bottom left) */
+
+.county-map .map-bottom-left {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: min(284px, calc(100% - 28px));
+}
+
+.county-map .map-hint {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--map-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--map-ink-soft);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.county-map .map-hint-top {
+  display: none;
+}
+
+.county-map .map-legend {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--map-line);
+  border-radius: 14px;
+  background: var(--map-panel);
+  box-shadow: var(--map-shadow);
+}
+
+.county-map .map-legend p {
+  margin: 0;
+}
+
+.county-map .map-legend-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.county-map .map-legend-subtitle {
+  margin-top: 1px !important;
+  color: var(--map-ink-soft);
+  font-size: 11px;
+}
+
+.county-map .map-legend-scale {
+  position: relative;
+  margin-top: 12px;
+  padding-bottom: 20px;
+}
+
+.county-map .map-legend-bar {
+  height: 10px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px rgba(23, 62, 53, 0.12);
+}
+
+.county-map .map-legend-marker {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 20px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--map-ink);
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+.county-map .map-legend-marker.is-selected {
+  background: var(--map-accent);
+}
+
+.county-map .map-legend-ticks {
+  position: absolute;
+  top: 15px;
+  right: 0;
+  left: 0;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.county-map .map-legend-ticks li {
+  position: absolute;
+  top: 0;
+  color: var(--map-ink-soft);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.county-map .map-legend-ticks li:first-child {
+  transform: none;
+}
+
+.county-map .map-legend-ticks li:last-child {
+  transform: translateX(-100%);
+}
+
+.county-map .map-legend-ticks li::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: rgba(23, 62, 53, 0.35);
+}
+
+.county-map .map-legend-ticks li:first-child::before {
+  left: 0;
+}
+
+.county-map .map-legend-ticks li:last-child::before {
+  right: 0;
+  left: auto;
+}
+
+.county-map .map-legend-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--map-ink-soft);
+  font-size: 11px;
+}
+
+.county-map .map-legend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.county-map .map-legend-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(23, 62, 53, 0.18);
+}
+
+.county-map .map-legend-heights {
+  flex: none;
+  fill: #79b396;
+  stroke: #3a8a73;
+  stroke-width: 0.8;
+}
+
+/* ------------------------------------------------------------- WebGL fallback */
+
+.county-map .map-notice {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(221, 136, 92, 0.55);
+  border-radius: 10px;
+  background: #fff8f2;
+  box-shadow: var(--map-shadow);
+  color: #7a3d1f;
+  font-size: 12.5px;
+  line-height: 1.4;
+  transform: translateX(-50%);
+}
+
+.county-map .map-fallback {
+  position: absolute;
+  inset: 64px 16px 16px;
+}
+
+.county-map .map-fallback-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.county-map .map-fallback-county {
+  fill-rule: evenodd;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+
+.county-map .map-fallback-county:hover {
+  stroke: var(--map-ink);
+  stroke-width: 1.5px;
+}
+
+.county-map .map-fallback-selected {
+  fill: none;
+  stroke: var(--map-accent);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------- utilities */
+
+.county-map .map-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------- compact containers (phones, narrow panels) */
+
+@container (max-width: 559px) {
+  .county-map .map-mode {
+    top: 10px;
+    left: 10px;
+  }
+
+  .county-map .map-mode-option {
+    min-width: 40px;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .county-map .map-toolbar {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .county-map .map-tool {
+    width: 36px;
+    height: 34px;
+  }
+
+  .county-map .map-hint-inline {
+    display: none;
+  }
+
+  .county-map .map-hint-top {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    z-index: 3;
+    display: block;
+    width: max-content;
+    max-width: calc(100% - 210px);
+    padding: 4px 8px;
+    font-size: 10.5px;
+    text-align: center;
+    transform: translateX(-50%);
+  }
+
+  .county-map .map-bottom-left {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .county-map .map-legend {
+    padding: 8px 10px;
+  }
+
+  .county-map .map-legend-subtitle {
+    display: none;
+  }
+
+  .county-map .map-legend-scale {
+    margin-top: 8px;
+  }
+
+  .county-map .map-fallback {
+    inset: 72px 10px 110px;
+  }
+
+  .county-map[data-status='unsupported'] .map-hint-top,
+  .county-map[data-status='lost'] .map-hint-top {
+    display: none;
+  }
+}
+
+@container (max-width: 359px) {
+  .county-map .map-hint-top {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .county-map *,
+  .county-map *::before,
+  .county-map *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
