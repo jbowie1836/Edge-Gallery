@@ -1,0 +1,127 @@
+{
+  "description": "Provenance for public/data/income.json and texas-counties.geojson. Extract CSVs hold the official values verbatim; empty cells are nulls in the Census response (in annotation columns, no annotation).",
+  "release": {
+    "survey": "American Community Survey 5-Year Estimates",
+    "period": "2020-2024",
+    "releaseDate": "2026-01-29",
+    "releaseNotesUrl": "https://www.census.gov/programs-surveys/acs/news/data-releases/2024/release.html",
+    "newerReleaseCheck": {
+      "url": "https://api.census.gov/data/2025/acs/acs5/subject.json",
+      "httpStatus": 404
+    }
+  },
+  "variables": {
+    "S1901_C01_013E": {
+      "label": "Estimate!!Households!!Mean income (dollars)",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    },
+    "S1901_C01_013M": {
+      "label": "Margin of Error!!Households!!Mean income (dollars)",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    },
+    "S1901_C01_001E": {
+      "label": "Estimate!!Households!!Total",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    },
+    "S1901_C01_001M": {
+      "label": "Margin of Error!!Households!!Total",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    },
+    "S1901_C01_012E": {
+      "label": "Estimate!!Households!!Median income (dollars)",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    },
+    "S1901_C01_012M": {
+      "label": "Margin of Error!!Households!!Median income (dollars)",
+      "concept": "Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)"
+    }
+  },
+  "sources": [
+    {
+      "role": "Variable labels and dollar basis (Census API metadata, keyless)",
+      "url": "https://api.census.gov/data/2024/acs/acs5/subject/groups/S1901.json",
+      "fetchedAt": "2026-11-08T06:56:45Z",
+      "lastModified": null,
+      "bytes": 89864,
+      "sha256": "1fd98c7587dbf3626fa53b0be3f2601a8cefd68d20ea5e40144d1760c110ece2"
+    },
+    {
+      "role": "County estimates (data.census.gov table service)",
+      "url": "https://data.census.gov/api/access/data/table?id=ACSST5Y2024.S1901&g=040XX00US48%240500000",
+      "fetchedAt": "2026-11-08T06:56:45Z",
+      "lastModified": "Sun, 08 Nov 2026 06:46:17 GMT",
+      "bytes": 433602,
+      "sha256": "f90846bf0eea66a23f80ced4019ff082a1a8178d0943122e323171b3e2221e72"
+    },
+    {
+      "role": "Texas estimate (data.census.gov table service)",
+      "url": "https://data.census.gov/api/access/data/table?id=ACSST5Y2024.S1901&g=040XX00US48",
+      "fetchedAt": "2026-11-08T06:56:45Z",
+      "lastModified": "Sun, 08 Nov 2026 06:46:16 GMT",
+      "bytes": 6416,
+      "sha256": "199b7b7f7156e94fade7ca475b52bf559d1503f97faeaca565958889961350d4"
+    },
+    {
+      "role": "Cross-check: ACS summary file table B19025",
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19025.dat",
+      "fetchedAt": "2026-11-08T06:56:45Z",
+      "lastModified": "Thu, 29 Jan 2026 12:57:44 GMT",
+      "bytes": 20727905,
+      "sha256": "1b6a37b48fb5f80480ae88bd4a364343ac4c21576cef07be2751b7009cdbda35"
+    },
+    {
+      "role": "Cross-check: ACS summary file table B11001",
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b11001.dat",
+      "fetchedAt": "2026-11-08T06:56:46Z",
+      "lastModified": "Thu, 29 Jan 2026 12:42:57 GMT",
+      "bytes": 45827971,
+      "sha256": "77200c3d9c0d99773bc7f78208bc96f25170e5d4d175a5de320620b478ceaff5"
+    },
+    {
+      "role": "County boundaries (cartographic boundary file)",
+      "url": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_county_5m.zip",
+      "fetchedAt": "2026-11-08T06:56:47Z",
+      "lastModified": "Thu, 10 Apr 2025 16:25:55 GMT",
+      "bytes": 2982952,
+      "sha256": "a867f8734059b45d1d54a0ba56189dd7e73c42eb451418fa56de44c35232614b"
+    },
+    {
+      "role": "Texas outline for the gap/overlap check",
+      "url": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_5m.zip",
+      "fetchedAt": "2026-11-08T06:56:47Z",
+      "lastModified": "Thu, 10 Apr 2025 16:25:55 GMT",
+      "bytes": 1122055,
+      "sha256": "c9db0e395c11a1f94a8017fde4f4c7cbee1dca6eb37ba8f1ccaab927df70885f"
+    }
+  ],
+  "outputs": {
+    "estimatesExtract": "source/acs5-2020-2024-s1901-texas.csv",
+    "crossCheckExtract": "source/acs5-2020-2024-summary-file-b19025-b11001-texas.csv"
+  },
+  "summaryFileCrossCheck": {
+    "geographiesChecked": 255,
+    "householdTotalsMatched": 255,
+    "maxAbsoluteDifferenceDollars": 0.4993,
+    "toleranceDollars": 1.0
+  },
+  "geometry": {
+    "resolution": "1:5,000,000",
+    "coordinateDecimals": 5,
+    "coordinateSystem": "NAD83 longitude/latitude (EPSG:4269), used as GeoJSON lon/lat",
+    "winding": "exterior rings clockwise, holes counter-clockwise (d3-geo convention)",
+    "features": 254,
+    "rings": 265,
+    "vertices": 11827,
+    "stateTiling": {
+      "countyAreaSquareDegrees": 65.355036,
+      "stateAreaSquareDegrees": 65.355036,
+      "relativeDifference": 0.0
+    }
+  },
+  "coverage": {
+    "counties": 254,
+    "meanIncomePublished": 254,
+    "marginOfErrorPublished": 254,
+    "householdsPublished": 254
+  }
+}
