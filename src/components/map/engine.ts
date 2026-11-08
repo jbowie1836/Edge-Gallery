@@ -649,17 +649,19 @@ export class CountyMapEngine {
       if (!point || !county) continue; // never label a point outside the drawn counties
       const element = this.createLabelElement('map-city', city.name);
       element.dataset.side = city.side;
-      this.labels.push({ element, x: point[0], z: point[1], height: this.entries.get(county.fips)?.encoding.height ?? 0, visible: true });
+      this.labels.push({ element, x: point[0], z: point[1], height: this.entries.get(county.fips)?.encoding.height ?? 0, visible: false });
     }
     const pin = this.createLabelElement('map-pin', '');
     pin.hidden = true;
-    this.selectionLabel = { element: pin, x: 0, z: 0, height: 0, visible: true };
+    this.selectionLabel = { element: pin, x: 0, z: 0, height: 0, visible: false };
     this.labels.push(this.selectionLabel);
   }
 
+  /** Labels start hidden and appear on the first render that positions them. */
   private createLabelElement(className: string, text: string): HTMLElement {
     const element = document.createElement('div');
     element.className = className;
+    element.style.visibility = 'hidden';
     const dot = document.createElement('span');
     dot.className = 'map-label-dot';
     const name = document.createElement('span');
@@ -675,6 +677,9 @@ export class CountyMapEngine {
     if (!label) return;
     const entry = this.selectedFips ? this.entries.get(this.selectedFips) : undefined;
     label.element.hidden = !entry;
+    // Hide until the next render has moved the pin to its new county.
+    label.visible = false;
+    label.element.style.visibility = 'hidden';
     if (!entry) return;
     label.x = entry.county.labelPoint[0];
     label.z = entry.county.labelPoint[1];
