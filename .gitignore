@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.hoplite/artifacts/
+.hoplite/runtime/
+__pycache__/
+.data-cache/
